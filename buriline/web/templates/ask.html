@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% set active='ask' %}{% block title %}BuriLine · Fragen{% endblock %}
+{% block body %}
+<h1>Fragen an die Daten</h1>
+<p class="sub">Antworten basieren ausschließlich auf den berechneten Kennzahlen. {% if ai.ollama_available %}<span class="badge ok">Ollama · {{ ai.model }}</span>{% else %}<span class="badge warn">Kein Sprachmodell erreichbar unter {{ ai.ollama_url }} · regelbasierte Antworten</span>{% endif %}</p>
+<div class="card">
+<form id="askform" onsubmit="ask(event)">
+<textarea name="question" placeholder="z. B. Warum lagen wir Dienstag in der Spätschicht unter Soll?"></textarea>
+<div class="form inline" style="margin-top:10px;display:flex;gap:10px;align-items:center"><input type="text" name="user" value="bediener" style="max-width:200px" title="Benutzer für den Audit-Trail"><button>Fragen</button></div>
+</form>
+<div style="margin-top:10px">
+<span class="chip" onclick="chip(this)">Was war der größte Stillstandsgrund diese Woche?</span>
+<span class="chip" onclick="chip(this)">Welche Maschine ist der Engpass und warum?</span>
+<span class="chip" onclick="chip(this)">Warum lagen wir in der Spätschicht unter Soll?</span>
+<span class="chip" onclick="chip(this)">Welche Artikel muss ich diese Woche nachbestellen?</span>
+<span class="chip" onclick="chip(this)">Schreibe drei Maßnahmen für die nächste Schicht.</span>
+</div></div>
+<h2>Verlauf</h2>
+<div class="chat" id="chat">
+{% for r in history|reverse if r.action == 'frage' %}<div class="msg q">{{ r.prompt }}</div><div class="msg a">{{ r.answer }}<div class="meta">{{ r.ts }} · {{ r.user }} · {{ r.model }} · Audit {{ r.hash[:12] }}</div></div>{% endfor %}
+</div>
+{% endblock %}

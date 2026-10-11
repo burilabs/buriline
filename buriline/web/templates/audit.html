@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% set active='audit' %}{% block title %}BuriLine · Audit-Trail{% endblock %}
+{% block body %}
+<h1>Audit-Trail</h1>
+<p class="sub">{{ count }} Einträge · {% if ok %}<span class="badge ok">{{ msg }}</span>{% else %}<span class="badge err">{{ msg }}</span>{% endif %} · Datei <span class="mono">{{ audit_file }}</span> · nur anhängend, Hash-verkettet (SHA-256)</p>
+<div class="card"><table><tr><th>Zeit (UTC)</th><th>Benutzer</th><th>Aktion</th><th>Modell</th><th>Frage / Details</th><th>Antwort</th><th>Datensatz</th><th>Hash</th></tr>
+{% for r in records %}<tr><td class="mono">{{ r.ts }}</td><td>{{ r.user }}</td><td>{{ r.action }}</td><td class="mono">{{ r.model or '' }}</td><td>{{ r.prompt or r.details }}</td><td style="max-width:420px;white-space:pre-wrap;font-size:12px">{{ (r.answer or '')[:400] }}{% if r.answer and r.answer|length > 400 %} …{% endif %}</td><td class="mono">{{ (r.dataset_sha256 or '')[:24] }}</td><td class="mono">{{ r.hash[:12] }}</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

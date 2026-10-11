@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% set active='inventory' %}{% block title %}BuriLine · Lager{% endblock %}
+{% block body %}
+{% if not s %}{% include "_empty.html" %}{% else %}
+<h1>Lager</h1>
+<p class="sub">{{ s.totals.skus }} Artikel · Datei {{ names.inventory }} · <span class="mono">sha256 {{ hashes.inventory[:16] }}</span></p>
+<div class="tiles">
+  <div class="tile"><div class="k">Bestandswert</div><div class="v accent">{{ s.totals.stock_value|num }} €</div></div>
+  <div class="tile"><div class="k">Negativer Bestand</div><div class="v red">{{ s.totals.negative }}</div><div class="d">Buchungsfehler prüfen</div></div>
+  <div class="tile"><div class="k">Unter Mindestbestand</div><div class="v">{{ s.totals.below_min }}</div></div>
+  <div class="tile"><div class="k">Reichweite &lt; 14 Tage</div><div class="v red">{{ s.totals.runout_14d }}</div></div>
+  <div class="tile"><div class="k">Ladenhüter</div><div class="v">{{ s.totals.slow_movers }}</div><div class="d">{{ s.totals.slow_value|num }} € gebunden</div></div>
+</div>
+<div class="grid2">
+<div><h2>Nachbestellvorschläge</h2><div class="card"><table><tr><th>Artikel</th><th>Bezeichnung</th><th class="r">Bestand</th><th class="r">Reichweite</th><th class="r">Vorschlag (30 Tage)</th></tr>
+{% for r in s.reorder_suggestions %}<tr><td class="mono">{{ r.sku }}</td><td>{{ r.description }}</td><td class="r">{{ r.stock|num }}</td><td class="r">{{ r.reach_days|num1 }} Tage</td><td class="r"><b>{{ r.suggested_qty|num }}</b></td></tr>{% endfor %}</table></div></div>
+<div><h2>ABC-Verteilung</h2><div class="card"><table><tr><th>Klasse</th><th class="r">Artikel</th><th class="r">Jahresverbrauchswert</th></tr>
+{% for r in s.abc %}<tr><td><b>{{ r.abc }}</b></td><td class="r">{{ r.skus }}</td><td class="r">{{ r.value|num }} €</td></tr>{% endfor %}</table></div>
+<h2>Negative Bestände</h2><div class="card"><table><tr><th>Artikel</th><th>Bezeichnung</th><th class="r">Bestand</th><th class="r">Wert/Stk</th></tr>
+{% for r in s.negative %}<tr class="bad"><td class="mono">{{ r.sku }}</td><td>{{ r.description }}</td><td class="r">{{ r.stock|num }}</td><td class="r">{{ r.unit_cost|num1 }} €</td></tr>{% endfor %}</table></div></div>
+</div>
+<h2>Ladenhüter</h2><div class="card"><table><tr><th>Artikel</th><th>Bezeichnung</th><th class="r">Bestand</th><th class="r">Wert</th><th class="r">Tage ohne Bewegung</th><th>ABC</th></tr>
+{% for r in s.slow_movers %}<tr><td class="mono">{{ r.sku }}</td><td>{{ r.description }}</td><td class="r">{{ r.stock|num }}</td><td class="r">{{ r.stock_value|num }} €</td><td class="r">{{ r.days_since_movement }}</td><td>{{ r.abc }}</td></tr>{% endfor %}</table></div>
+{% endif %}{% endblock %}

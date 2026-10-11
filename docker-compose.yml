@@ -1,0 +1,30 @@
+# BuriLine on a plant server. The model container has no route to the internet:
+# the "inside" network is marked internal, so Ollama can only talk to BuriLine.
+services:
+  buriline:
+    build: .
+    ports:
+      - "8800:8800"
+    volumes:
+      - buriline-data:/data
+    environment:
+      BURILINE_MODEL: qwen2.5:3b
+    networks: [inside, outside]
+    depends_on: [ollama]
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama-models:/root/.ollama
+    networks: [inside]
+    restart: unless-stopped
+
+volumes:
+  buriline-data:
+  ollama-models:
+
+networks:
+  inside:
+    internal: true
+  outside:

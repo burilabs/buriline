@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><title>{% block title %}BuriLine{% endblock %}</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/static/app.css"></head>
+<body>
+<header>
+  <div class="brand"><b>B</b> BuriLine</div>
+  <nav>
+    <a href="/" class="{{ 'active' if active=='line' }}">Linie</a>
+    <a href="/stundentafel" class="{{ 'active' if active=='board' }}">Stundentafel</a>
+    <a href="/lager" class="{{ 'active' if active=='inventory' }}">Lager</a>
+    <a href="/fragen" class="{{ 'active' if active=='ask' }}">Fragen</a>
+    <a href="/bericht" class="{{ 'active' if active=='report' }}">Schichtbericht</a>
+    <a href="/audit" class="{{ 'active' if active=='audit' }}">Audit-Trail</a>
+    <a href="/daten" class="{{ 'active' if active=='data' }}">Daten</a>
+  </nav>
+  <div class="right"><span class="badge ok">offline</span><span>{{ now }}</span></div>
+</header>
+<main>{% block body %}{% endblock %}</main>
+<footer>BuriLine {{ version }} · BuriLabs · Alle Kennzahlen deterministisch berechnet, keine Daten verlassen dieses Gerät.</footer>
+<script src="/static/app.js"></script>
+</body></html>

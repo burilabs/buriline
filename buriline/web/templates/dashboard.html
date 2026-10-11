@@ -1,0 +1,34 @@
+{% extends "base.html" %}{% set active='line' %}{% block title %}BuriLine · Linie{% endblock %}
+{% block body %}
+{% if not s %}{% include "_empty.html" %}{% else %}
+<h1>Stillstandsanalyse</h1>
+<p class="sub">{{ s.period.from[:10] }} bis {{ s.period.to[:10] }} · {{ s.period.days }} Tage · Datei {{ names.line }} · <span class="mono">sha256 {{ hashes.line[:16] }}</span></p>
+<div class="tiles">
+  <div class="tile"><div class="k">OEE Linie</div><div class="v accent">{{ s.line_oee.oee_last_machine|pct }}</div><div class="d">{{ s.line_oee.machine }} (Linienausgang)</div></div>
+  <div class="tile"><div class="k">Verfügbarkeit min.</div><div class="v">{{ s.line_oee.availability_min|pct }}</div><div class="d">schwächste Maschine</div></div>
+  <div class="tile"><div class="k">Gutstück</div><div class="v green">{{ s.totals.good_count|num }}</div><div class="d">{{ s.totals.reject_count|num }} Ausschuss</div></div>
+  <div class="tile"><div class="k">Stillstand</div><div class="v red">{{ s.totals.stop_min|num }} min</div><div class="d">{{ s.totals.stops|num }} Ereignisse</div></div>
+  <div class="tile"><div class="k">Engpass</div><div class="v">{{ s.bottleneck.machine }}</div><div class="d">{{ s.bottleneck.own_downtime_min|num }} min eigene Verluste</div></div>
+</div>
+<h2>Maschinen</h2>
+<div class="card"><table><tr><th>Maschine</th><th class="r">Verfügb.</th><th class="r">Leistung</th><th class="r">Qualität</th><th class="r">OEE</th><th>OEE</th><th class="r">Stopps</th><th class="r">Mikro</th><th class="r">Stillstand</th><th class="r">Rüsten</th><th class="r">Blockiert / leer</th><th class="r">MTBF</th><th class="r">MTTR</th></tr>
+{% for m in s.machines %}<tr><td><b>{{ m.machine }}</b></td><td class="r">{{ m.availability|pct }}</td><td class="r">{{ m.performance|pct }}</td><td class="r">{{ m.quality|pct }}</td><td class="r"><b>{{ m.oee|pct }}</b></td>
+<td><div class="bar {{ 'green' if m.oee and m.oee>0.85 else ('red' if m.oee and m.oee<0.6 else '') }}"><i style="width:{{ (m.oee or 0)*100 }}%"></i></div></td>
+<td class="r">{{ m.stops }}</td><td class="r">{{ m.microstops }}</td><td class="r">{{ m.stop_s|minutes }}</td><td class="r">{{ m.setup_s|minutes }}</td><td class="r">{{ m.flow_loss_s|minutes }}</td><td class="r">{{ m.mtbf_min|num1 }} min</td><td class="r">{{ m.mttr_min|num1 }} min</td></tr>{% endfor %}
+</table></div>
+<div class="grid3">
+<div><h2>Top-Stillstandsgründe</h2><div class="card"><table><tr><th>Maschine</th><th>Code</th><th>Grund</th><th class="r">Anzahl</th><th class="r">Minuten</th><th>Anteil</th></tr>
+{% for p in s.pareto %}<tr><td>{{ p.machine }}</td><td class="mono">{{ p.alarm_code }}</td><td>{{ p.alarm_text }}</td><td class="r">{{ p.count }}</td><td class="r">{{ p.duration_min|num }}</td><td><div class="bar"><i style="width:{{ p.share*100 }}%"></i></div><span class="mono">{{ p.share|pct }}</span></td></tr>{% endfor %}</table></div></div>
+<div><h2>Mikrostopps &lt; {{ s.microstop_threshold_s }} s</h2><div class="card"><table><tr><th>Maschine</th><th>Grund</th><th class="r">Anzahl</th><th class="r">Min</th></tr>
+{% for p in s.microstops[:8] %}<tr><td>{{ p.machine }}</td><td>{{ p.alarm_text }}</td><td class="r">{{ p.count }}</td><td class="r">{{ p.duration_min|num }}</td></tr>{% endfor %}</table></div></div>
+</div>
+<div class="grid2">
+<div><h2>Schichten</h2><div class="card"><table><tr><th>Datum</th><th>Schicht</th><th class="r">Verfügb.</th><th></th><th class="r">Gutstück</th><th class="r">Stillstand</th><th class="r">Stopps</th></tr>
+{% for r in s.shifts %}<tr class="{{ 'bad' if r.availability < 0.75 }}"><td>{{ r.date }}</td><td>{{ r.shift }}</td><td class="r">{{ r.availability|pct }}</td><td><div class="bar {{ 'red' if r.availability<0.75 else 'green' }}"><i style="width:{{ r.availability*100 }}%"></i></div></td><td class="r">{{ r.good_count|num }}</td><td class="r">{{ r.stop_min|num }} min</td><td class="r">{{ r.stops }}</td></tr>{% endfor %}</table></div></div>
+<div><h2>Tagesverlauf</h2><div class="card"><table><tr><th>Datum</th><th class="r">Verfügbarkeit</th><th></th><th class="r">Gutstück</th><th class="r">Stillstand</th></tr>
+{% for r in s.trend %}<tr><td>{{ r.date }}</td><td class="r">{{ r.availability|pct }}</td><td><div class="bar blue"><i style="width:{{ r.availability*100 }}%"></i></div></td><td class="r">{{ r.good_count|num }}</td><td class="r">{{ r.stop_min|num }} min</td></tr>{% endfor %}</table></div>
+<h2>Engpass</h2><div class="card"><p><b>{{ s.bottleneck.machine }}</b> hat mit {{ s.bottleneck.own_downtime_min|num }} min die meisten eigenen Verluste (Störungen + Rüsten). Niedrigste Verfügbarkeit: {{ s.bottleneck.lowest_availability }}.</p>
+<table><tr><th>Maschine</th><th class="r">wartet auf Nachbar (blockiert / leer)</th></tr>{% for m, v in s.bottleneck.flow_loss_min_by_machine.items() %}<tr><td>{{ m }}</td><td class="r">{{ v|num }} min</td></tr>{% endfor %}</table></div></div>
+</div>
+<p class="note">KI: {% if ai.ollama_available %}<span class="badge ok">Ollama {{ ai.model }}</span>{% else %}<span class="badge warn">kein Modell erreichbar, regelbasierte Erklärung aktiv</span>{% endif %} · <a href="/fragen">Fragen stellen</a> · <a href="/bericht">Schichtbericht erzeugen</a></p>
+{% endif %}{% endblock %}

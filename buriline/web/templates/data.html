@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% set active='data' %}{% block title %}BuriLine · Daten{% endblock %}
+{% block body %}
+<h1>Daten</h1>
+<p class="sub">CSV oder Excel. Spaltennamen werden automatisch erkannt (deutsch oder englisch). Nichts wird nach außen gesendet.</p>
+{% if error %}<div class="card" style="border-color:var(--red)"><b style="color:var(--red)">Fehler:</b> {{ error }}</div>{% endif %}
+{% if info %}<div class="card" style="border-color:var(--green)"><b style="color:var(--green)">{{ info }}</b></div>{% endif %}
+<div class="grid2">
+<div class="card"><h3>Upload</h3>
+<form method="post" action="/daten/upload" enctype="multipart/form-data">
+<select name="kind">
+<option value="line_events">Maschinenzustände / Alarmliste (Stillstandsanalyse)</option>
+<option value="hourly_board">Stundentafel Soll/Ist</option>
+<option value="inventory_stock">Lager: Bestandsliste</option>
+<option value="inventory_movements">Lager: Bewegungen (nach Bestandsliste)</option>
+</select>
+<p><input type="file" name="file" required accept=".csv,.xlsx,.xls,.txt"></p>
+<button>Hochladen</button></form>
+<p class="note">Erwartete Spalten · Zustände: Zeitstempel, Maschine, Zustand, optional Dauer, Fehlercode, Fehlertext, Charge, Gutstück, Ausschuss.
+Stundentafel: Datum, Stunde, Soll, Ist, optional Grund, Auftrag, Schicht. Lager: Artikel, Bestand, optional Mindestbestand, Preis, Tagesverbrauch, letzte Bewegung.</p></div>
+<div class="card"><h3>Status</h3>
+<table><tr><th>Datensatz</th><th>Datei</th><th>SHA-256</th></tr>
+{% for k in ['line','board','inventory'] %}<tr><td>{{ {'line':'Maschinenzustände','board':'Stundentafel','inventory':'Lager'}[k] }}</td><td>{{ names.get(k, '–') }}</td><td class="mono">{{ hashes.get(k, '')[:24] }}</td></tr>{% endfor %}</table>
+<h3 style="margin-top:18px">Sprachmodell</h3>
+<p>Ollama unter <span class="mono">{{ ai.ollama_url }}</span>: {% if ai.ollama_available %}<span class="badge ok">erreichbar</span> · installiert: {{ ai.models_installed|join(', ') }}{% else %}<span class="badge warn">nicht erreichbar</span> · Antworten kommen regelbasiert{% endif %}<br>Konfiguriertes Modell: <span class="mono">{{ ai.model }}</span></p>
+<h3 style="margin-top:18px">Demo</h3>
+<form method="post" action="/daten/demo"><button class="secondary">Synthetische Demo-Linie laden</button></form>
+<p class="note">Erzeugt eine Verpackungslinie (Blister, Kartonierer, Kartonpacker) mit 7 Tagen Ereignissen, eine Stundentafel und ein Teilelager. Überschreibt geladene Daten.</p></div>
+</div>
+{% endblock %}

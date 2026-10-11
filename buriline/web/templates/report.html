@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% set active='report' %}{% block title %}BuriLine · Schichtbericht{% endblock %}
+{% block body %}
+{% if not s %}{% include "_empty.html" %}{% else %}
+<h1>Schichtbericht</h1>
+<p class="sub">Erstellt {{ now }} · Datensätze {% for k, v in hashes.items() %}{{ k }} <span class="mono">{{ v[:12] }}</span> {% endfor %}</p>
+<div class="noprint" style="margin-bottom:16px"><button onclick="window.print()">Drucken / PDF</button></div>
+{% if s.line %}<h2>Kennzahlen Linie</h2><div class="tiles">
+<div class="tile"><div class="k">OEE</div><div class="v accent">{{ s.line.line_oee.oee_last_machine|pct }}</div></div>
+<div class="tile"><div class="k">Gutstück</div><div class="v">{{ s.line.totals.good_count|num }}</div></div>
+<div class="tile"><div class="k">Stillstand</div><div class="v red">{{ s.line.totals.stop_min|num }} min</div></div>
+<div class="tile"><div class="k">Engpass</div><div class="v">{{ s.line.bottleneck.machine }}</div></div></div>{% endif %}
+{% if s.board %}<h2>Stundentafel</h2><div class="tiles">
+<div class="tile"><div class="k">Zielerreichung</div><div class="v accent">{{ s.board.totals.attainment|pct }}</div></div>
+<div class="tile"><div class="k">Stunden unter Soll</div><div class="v red">{{ s.board.totals.hours_below_target }}</div></div></div>{% endif %}
+<h2>Zusammenfassung {{ '(Sprachmodell ' ~ res.model ~ ')' if res and res.provider == 'ollama' else '(regelbasiert, kein Sprachmodell)' }}</h2>
+<div class="explain">{{ text }}</div>
+<p class="note">Die Zusammenfassung wurde aus den oben gezeigten, deterministisch berechneten Kennzahlen erzeugt und im Audit-Trail protokolliert. Sie ersetzt keine Prüfung durch den Schichtleiter.</p>
+{% endif %}{% endblock %}

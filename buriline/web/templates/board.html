@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% set active='board' %}{% block title %}BuriLine · Stundentafel{% endblock %}
+{% block body %}
+{% if not s %}{% include "_empty.html" %}{% else %}
+<h1>Stundentafel Soll / Ist</h1>
+<p class="sub">{{ s.period.from }} bis {{ s.period.to }} · Datei {{ names.board }} · <span class="mono">sha256 {{ hashes.board[:16] }}</span></p>
+<div class="tiles">
+  <div class="tile"><div class="k">Zielerreichung</div><div class="v accent">{{ s.totals.attainment|pct }}</div><div class="d">Ist {{ s.totals.actual|num }} von Soll {{ s.totals.target|num }}</div></div>
+  <div class="tile"><div class="k">Stunden unter Soll</div><div class="v red">{{ s.totals.hours_below_target }}</div><div class="d">von {{ s.totals.hours }} Stunden</div></div>
+  <div class="tile"><div class="k">Verlorene Stück</div><div class="v">{{ (s.totals.target - s.totals.actual)|num }}</div><div class="d">Soll minus Ist</div></div>
+  <div class="tile"><div class="k">Häufigster Grund</div><div class="v" style="font-size:20px">{{ s.reasons[0].reason if s.reasons else '–' }}</div><div class="d">{{ s.reasons[0].hours if s.reasons else 0 }} Stunden</div></div>
+</div>
+<div class="grid2">
+<div><h2>Abweichungsgründe</h2><div class="card"><table><tr><th>Grund</th><th class="r">Stunden</th><th class="r">Verlorene Stück</th><th></th></tr>
+{% set mx = s.reasons[0].lost if s.reasons else 1 %}{% for r in s.reasons %}<tr><td>{{ r.reason }}</td><td class="r">{{ r.hours }}</td><td class="r">{{ r.lost|num }}</td><td><div class="bar red"><i style="width:{{ (r.lost / mx * 100) if mx else 0 }}%"></i></div></td></tr>{% endfor %}</table></div></div>
+<div><h2>Wochentag × Schicht</h2><div class="card"><table><tr><th>Wochentag</th><th>Schicht</th><th class="r">Zielerreichung</th><th></th></tr>
+{% for r in s.weekday_shift %}<tr class="{{ 'bad' if r.attainment < 0.85 }}"><td>{{ r.weekday }}</td><td>{{ r.shift }}</td><td class="r">{{ r.attainment|pct }}</td><td><div class="bar {{ 'red' if r.attainment<0.85 else 'green' }}"><i style="width:{{ r.attainment*100 }}%"></i></div></td></tr>{% endfor %}</table></div></div>
+</div>
+<h2>Schichten</h2><div class="card"><table><tr><th>Datum</th><th>Schicht</th><th class="r">Soll</th><th class="r">Ist</th><th class="r">Zielerreichung</th><th></th></tr>
+{% for r in s.by_shift %}<tr class="{{ 'bad' if r.attainment < 0.85 }}"><td>{{ r.date }}</td><td>{{ r.shift }}</td><td class="r">{{ r.target|num }}</td><td class="r">{{ r.actual|num }}</td><td class="r">{{ r.attainment|pct }}</td><td><div class="bar {{ 'red' if r.attainment<0.85 else 'green' }}"><i style="width:{{ r.attainment*100 }}%"></i></div></td></tr>{% endfor %}</table></div>
+<h2>Schlechteste Stunden</h2><div class="card"><table><tr><th>Datum</th><th class="r">Stunde</th><th>Schicht</th><th>Auftrag</th><th class="r">Soll</th><th class="r">Ist</th><th>Grund</th></tr>
+{% for r in s.worst_hours %}<tr class="bad"><td>{{ r.date }}</td><td class="r">{{ r.hour }}:00</td><td>{{ r.shift }}</td><td class="mono">{{ r.order }}</td><td class="r">{{ r.target }}</td><td class="r">{{ r.actual }}</td><td>{{ r.reason or '— kein Grund eingetragen —' }}</td></tr>{% endfor %}</table></div>
+{% endif %}{% endblock %}
