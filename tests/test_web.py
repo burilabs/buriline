@@ -35,3 +35,22 @@ def test_empty_state_and_demo_flow(client):
 def test_upload_rejects_bad_file(client):
     r = client.post("/daten/upload", data={"kind": "line_events"}, files={"file": ("x.csv", b"a,b\n1,2\n")}, follow_redirects=False)
     assert r.status_code == 303 and "error=" in r.headers["location"]
+
+
+def test_readonly_mode_blocks_upload_and_reset(tmp_path, monkeypatch):
+    monkeypatch.setenv("BURILINE_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("BURILINE_AUDIT_FILE", str(tmp_path / "data" / "audit.jsonl"))
+    monkeypatch.setenv("BURILINE_OLLAMA_URL", "http://127.0.0.1:1")
+    monkeypatch.setenv("BURILINE_READONLY", "1")
+    import importlib
+    from buriline import config
+    importlib.reload(config)
+    from buriline.web import app as webapp
+    importlib.reload(webapp)
+    from fastapi.testclient import TestClient
+    c = TestClient(webapp.app)
+    r = c.post("/daten/demo", follow_redirects=False)
+    assert r.status_code == 303 and "error=" in r.headers["location"]
+    r = c.post("/daten/upload", data={"kind": "line_events"}, files={"file": ("x.csv", b"a,b\n1,2\n")}, follow_redirects=False)
+    assert "error=" in r.headers["location"]
+    assert "öffentliche Demo" in c.get("/").text

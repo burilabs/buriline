@@ -4,6 +4,7 @@
 <p class="sub">CSV oder Excel. Spaltennamen werden automatisch erkannt (deutsch oder englisch). Nichts wird nach außen gesendet.</p>
 {% if error %}<div class="card" style="border-color:var(--red)"><b style="color:var(--red)">Fehler:</b> {{ error }}</div>{% endif %}
 {% if info %}<div class="card" style="border-color:var(--green)"><b style="color:var(--green)">{{ info }}</b></div>{% endif %}
+{% if readonly %}<div class="card" style="border-color:var(--accent)">Diese Installation läuft als öffentliche Demo mit synthetischen Daten. Uploads und Zurücksetzen sind deaktiviert. Für eigene Daten: <a href="https://github.com/burilabs/buriline">BuriLine selbst installieren</a>, es läuft komplett offline.</div>{% endif %}
 <div class="grid2">
 <div class="card"><h3>Upload</h3>
 <form method="post" action="/daten/upload" enctype="multipart/form-data">

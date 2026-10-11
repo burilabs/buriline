@@ -19,6 +19,8 @@ class Settings:
     language: str = field(default_factory=lambda: _env("BURILINE_LANG", "de"))
     microstop_seconds: int = field(default_factory=lambda: int(_env("BURILINE_MICROSTOP_SECONDS", "60")))
     llm_timeout_s: float = field(default_factory=lambda: float(_env("BURILINE_LLM_TIMEOUT", "120")))
+    # Public demo mode: uploads and data resets are refused, questions and reports still work.
+    readonly: bool = field(default_factory=lambda: _env("BURILINE_READONLY", "0").lower() in ("1", "true", "yes"))
     # Machines are often blocked/starved by neighbours. These states count as downtime
     # but are reported separately so the bottleneck analysis can tell them apart.
     run_states: tuple[str, ...] = ("RUN",)

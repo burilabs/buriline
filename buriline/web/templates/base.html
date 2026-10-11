@@ -13,7 +13,7 @@
     <a href="/audit" class="{{ 'active' if active=='audit' }}">Audit-Trail</a>
     <a href="/daten" class="{{ 'active' if active=='data' }}">Daten</a>
   </nav>
-  <div class="right"><span class="badge ok">offline</span><span>{{ now }}</span></div>
+  <div class="right">{% if readonly %}<span class="badge warn">öffentliche Demo</span>{% endif %}<span class="badge ok">offline-fähig</span><span>{{ now }}</span></div>
 </header>
 <main>{% block body %}{% endblock %}</main>
 <footer>BuriLine {{ version }} · BuriLabs · Alle Kennzahlen deterministisch berechnet, keine Daten verlassen dieses Gerät.</footer>

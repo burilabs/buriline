@@ -126,7 +126,7 @@ state = State()
 
 
 def ctx(request: Request, **extra: Any) -> dict[str, Any]:
-    return {"version": __version__, "names": state.names, "hashes": state.hashes,
+    return {"version": __version__, "names": state.names, "hashes": state.hashes, "readonly": settings.readonly,
             "has": {"line": state.line is not None, "board": state.board is not None, "inventory": state.stock is not None},
             "now": datetime.now().strftime("%d.%m.%Y %H:%M"), **extra}
 
@@ -194,8 +194,13 @@ def data_page(request: Request, error: str = "", info: str = ""):
     return render(request, "data.html", error=error, info=info, ai=state.assistant.status())
 
 
+READONLY_MSG = "Diese Installation ist eine öffentliche Demo. Uploads und Zurücksetzen sind deaktiviert."
+
+
 @app.post("/daten/upload")
 async def upload(kind: str = Form(...), file: UploadFile = File(...)):
+    if settings.readonly:
+        return RedirectResponse(url=f"/daten?error={READONLY_MSG}", status_code=303)
     data = await file.read()
     try:
         key = state.store_upload(kind, data, file.filename or "upload.csv")
@@ -208,6 +213,8 @@ async def upload(kind: str = Form(...), file: UploadFile = File(...)):
 
 @app.post("/daten/demo")
 def load_demo():
+    if settings.readonly:
+        return RedirectResponse(url=f"/daten?error={READONLY_MSG}", status_code=303)
     state.load_demo()
     return RedirectResponse(url="/?info=demo", status_code=303)
 
