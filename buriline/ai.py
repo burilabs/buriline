@@ -140,13 +140,16 @@ class RuleBasedProvider:
 
     def answer(self, question: str, summaries: dict[str, Any]) -> str:
         """Very small keyword router so the fallback still gives a useful answer."""
+        import re
         q = question.lower()
+        def has(*words: str) -> bool:
+            return any(re.search(r"\b" + w, q) for w in words)
         texts = []
-        if "line" in summaries and any(k in q for k in ("stillstand", "oee", "verfügbar", "maschine", "engpass", "mikro", "schicht", "störung")):
+        if "line" in summaries and has("stillstand", "oee", "verfügbar", "maschine", "engpass", "mikro", "störung", "stopp"):
             texts.append(self.explain_line(summaries["line"]))
-        if "board" in summaries and any(k in q for k in ("soll", "ist", "stückzahl", "stundentafel", "ziel")):
+        if "board" in summaries and has("soll", "stückzahl", "stundentafel", "ziel", "spätschicht", "frühschicht", "nachtschicht"):
             texts.append(self.explain_board(summaries["board"]))
-        if "inventory" in summaries and any(k in q for k in ("lager", "bestand", "artikel", "nachbestell", "inventur", "negativ")):
+        if "inventory" in summaries and has("lager", "bestand", "artikel", "nachbestell", "inventur", "negativ"):
             texts.append(self.explain_inventory(summaries["inventory"]))
         if not texts:
             for key, fn in (("line", self.explain_line), ("board", self.explain_board), ("inventory", self.explain_inventory)):

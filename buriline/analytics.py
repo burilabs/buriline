@@ -211,8 +211,13 @@ def board_summary(board: pd.DataFrame) -> dict[str, Any]:
     reasons = reasons.sort_values("lost", ascending=False)
     worst_hours = b.sort_values("deviation").head(10)
     by_weekday_shift = b.copy()
-    by_weekday_shift["weekday"] = pd.to_datetime(by_weekday_shift["date"]).dt.day_name()
-    wds = by_weekday_shift.groupby(["weekday", "shift"]).agg(attainment=("attainment", "mean")).reset_index()
+    _days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
+    by_weekday_shift["_wd"] = pd.to_datetime(by_weekday_shift["date"]).dt.weekday
+    by_weekday_shift["weekday"] = by_weekday_shift["_wd"].map(lambda i: _days[i])
+    wds = by_weekday_shift.groupby(["_wd", "weekday", "shift"]).agg(attainment=("attainment", "mean")).reset_index()
+    _so = {"Früh": 0, "Spät": 1, "Nacht": 2}
+    wds["_so"] = wds["shift"].map(lambda x: _so.get(x, 9))
+    wds = wds.sort_values(["_wd", "_so"]).drop(columns=["_wd", "_so"])
     wds["attainment"] = wds["attainment"].round(4)
     return {
         "period": {"from": str(b["date"].min()), "to": str(b["date"].max())},
