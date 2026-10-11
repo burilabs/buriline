@@ -12,6 +12,7 @@
 <img src="https://img.shields.io/badge/python-3.11%2B-green"/>
 <img src="https://img.shields.io/badge/LLM-Ollama%20%7C%20Qwen%202.5-orange"/>
 <img src="https://img.shields.io/badge/license-MIT-yellow"/>
+<a href="https://github.com/burilabs/buriline/actions/workflows/ci.yml"><img src="https://github.com/burilabs/buriline/actions/workflows/ci.yml/badge.svg"/></a>
 
 </div>
 
@@ -25,6 +26,8 @@ von Hand ausrechnet.
 - **Das Sprachmodell läuft lokal** (Ollama, z. B. Qwen 2.5 3B) und erklärt die Zahlen auf Deutsch, beantwortet Rückfragen und schreibt den Schichtbericht. Ohne Modell liefert BuriLine eine regelbasierte Erklärung.
 - **Audit-Trail**: jede Frage, jede Antwort, jeder Datensatz-Hash, jedes Modell. Nur anhängend, SHA-256-verkettet, prüfbar.
 - **Keine Abhängigkeit nach außen**: keine CDN-Skripte, keine Telemetrie, der Modell-Container hat im Compose-Setup keine Route ins Internet.
+
+<p align="center"><img src="docs/dashboard.png" alt="BuriLine Stillstandsanalyse" width="900"/></p>
 
 ## Drei Anwendungen, ein Kern
 
@@ -82,6 +85,8 @@ Zustände: `RUN`, `STOP`, `SETUP`, `PLANNED_STOP`, `BLOCKED`, `STARVED`, `IDLE` 
 **Stundentafel**: `date;hour;shift;line;order;target;actual;reason;operator`
 
 **Lager**: Bestandsliste `sku;description;stock;min_stock;unit_cost;avg_daily_usage;last_movement;location`, optional Bewegungen `date;sku;qty;type`.
+
+<p align="center"><img src="docs/fragen.png" alt="Fragen an die Daten" width="900"/></p>
 
 ## Audit-Trail
 
